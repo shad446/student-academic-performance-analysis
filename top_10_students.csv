@@ -1,0 +1,11 @@
+gender,race/ethnicity,parental level of education,lunch,test preparation course,math score,reading score,writing score,Average Score
+male,group E,bachelor's degree,standard,completed,100,100,100,100.0
+female,group E,associate's degree,standard,none,100,100,100,100.0
+female,group E,bachelor's degree,standard,none,100,100,100,100.0
+female,group E,bachelor's degree,standard,completed,99,100,100,99.66666666666667
+female,group D,some college,standard,none,98,100,99,99.0
+female,group D,some high school,standard,completed,97,100,100,99.0
+female,group C,bachelor's degree,standard,completed,96,100,100,98.66666666666667
+male,group D,some college,standard,completed,100,97,99,98.66666666666667
+female,group E,master's degree,standard,completed,94,99,100,97.66666666666667
+female,group D,bachelor's degree,free/reduced,completed,93,100,100,97.66666666666667
