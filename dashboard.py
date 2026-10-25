@@ -1,418 +1,103 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-
-# ==========================================
-# PAGE SETTINGS
-# ==========================================
-
-st.set_page_config(
-    page_title="Student Academic Performance",
-    page_icon="🎓",
-    layout="wide"
-)
-
-# ==========================================
-# DARK THEME
-# ==========================================
-
-st.markdown("""
-<style>
-
-.stApp {
-    background-color: #0B1120;
-    color: #E5E7EB;
-}
-
-[data-testid="stSidebar"] {
-    background-color: #111827;
-}
-
-[data-testid="stMetric"] {
-    background-color: #1E293B;
-    border: 1px solid #334155;
-    border-radius: 12px;
-    padding: 15px;
-}
-
-[data-testid="stMetricLabel"] {
-    color: #94A3B8;
-}
-
-[data-testid="stMetricValue"] {
-    color: #38BDF8;
-}
-
-h1 {
-    color: #38BDF8;
-}
-
-h2, h3 {
-    color: #E2E8F0;
-}
-
-</style>
-""", unsafe_allow_html=True)
-
-# ==========================================
-# LOAD DATASET
-# ==========================================
-
-df = pd.read_csv("StudentsPerformance.csv")
-
-# Create Average Score
-df["Average Score"] = (
-    df["math score"] +
-    df["reading score"] +
-    df["writing score"]
-) / 3
-
-# ==========================================
-# TITLE
-# ==========================================
-
-st.title("🎓 Student Academic Performance Dashboard")
-
-st.write(
-    "Interactive analysis of student academic performance "
-    "and related factors."
-)
-
-# ==========================================
-# KPI CARDS
-# ==========================================
-
-total_students = len(df)
-overall_average = df["Average Score"].mean()
-average_math = df["math score"].mean()
-average_reading = df["reading score"].mean()
-average_writing = df["writing score"].mean()
-
-col1, col2, col3, col4, col5 = st.columns(5)
-
-col1.metric("👨‍🎓 Total Students", f"{total_students:,}")
-col2.metric("📊 Overall Average", f"{overall_average:.2f}")
-col3.metric("➗ Math Average", f"{average_math:.2f}")
-col4.metric("📖 Reading Average", f"{average_reading:.2f}")
-col5.metric("✍️ Writing Average", f"{average_writing:.2f}")
-# ==========================================
-# SIDEBAR FILTERS
-# ==========================================
-# ==========================================
-# APPLY FILTERS
-# ==========================================
-
-# ==========================================
-# SIDEBAR FILTERS
-# ==========================================
-
-st.sidebar.header("🎛️ Dashboard Filters")
-
-gender_filter = st.sidebar.multiselect(
-    "Gender",
-    options=df["gender"].unique(),
-    default=df["gender"].unique()
-)
-
-race_filter = st.sidebar.multiselect(
-    "Race/Ethnicity",
-    options=df["race/ethnicity"].unique(),
-    default=df["race/ethnicity"].unique()
-)
-
-parental_filter = st.sidebar.multiselect(
-    "Parental Education",
-    options=df["parental level of education"].unique(),
-    default=df["parental level of education"].unique()
-)
-
-lunch_filter = st.sidebar.multiselect(
-    "Lunch",
-    options=df["lunch"].unique(),
-    default=df["lunch"].unique()
-)
-
-test_prep_filter = st.sidebar.multiselect(
-    "Test Preparation",
-    options=df["test preparation course"].unique(),
-    default=df["test preparation course"].unique()
-)
-
-
-# ==========================================
-# APPLY FILTERS
-# ==========================================
-
-filtered_df = df[
-    (df["gender"].isin(gender_filter)) &
-    (df["race/ethnicity"].isin(race_filter)) &
-    (df["parental level of education"].isin(parental_filter)) &
-    (df["lunch"].isin(lunch_filter)) &
-    (df["test preparation course"].isin(test_prep_filter))
-]
-
-
-# ==========================================
-# FILTERED DATA
-# ==========================================
-
-st.subheader("📋 Filtered Student Data")
-
-st.write(f"Showing **{len(filtered_df):,} students**")
-
-st.dataframe(
-    filtered_df,
-    use_container_width=True
-)# ==========================================
-# SUBJECT PERFORMANCE
-# ==========================================
-
-st.subheader("📊 Average Score by Subject")
-
-subject_averages = {
-    "Math": filtered_df["math score"].mean(),
-    "Reading": filtered_df["reading score"].mean(),
-    "Writing": filtered_df["writing score"].mean()
-}
-
-fig, ax = plt.subplots(figsize=(8, 4))
-
-ax.bar(
-    subject_averages.keys(),
-    subject_averages.values()
-)
-
-ax.set_ylabel("Average Score")
-ax.set_ylim(0, 100)
-ax.set_title("Average Score by Subject")
-
-for i, value in enumerate(subject_averages.values()):
-    ax.text(
-        i,
-        value + 1,
-        f"{value:.1f}",
-        ha="center"
-    )
-
-st.pyplot(fig)# ==========================================
-# PERFORMANCE BY GENDER
-# ==========================================
-
-st.subheader("👥 Average Performance by Gender")
-
-gender_performance = (
-    filtered_df.groupby("gender")["Average Score"]
-    .mean()
-)
-
-fig, ax = plt.subplots(figsize=(8, 4))
-
-ax.bar(
-    gender_performance.index,
-    gender_performance.values
-)
-
-ax.set_ylabel("Average Score")
-ax.set_ylim(0, 100)
-ax.set_title("Average Academic Performance by Gender")
-
-for i, value in enumerate(gender_performance.values):
-    ax.text(
-        i,
-        value + 1,
-        f"{value:.1f}",
-        ha="center"
-    )
-
-st.pyplot(fig)# ==========================================
-# PERFORMANCE BY PARENTAL EDUCATION
-# ==========================================
-
-st.subheader("🎓 Performance by Parental Education")
-
-parental_performance = (
-    filtered_df.groupby("parental level of education")["Average Score"]
-    .mean()
-    .sort_values(ascending=False)
-)
-
-fig, ax = plt.subplots(figsize=(10, 5))
-
-ax.bar(
-    parental_performance.index,
-    parental_performance.values
-)
-
-ax.set_ylabel("Average Score")
-ax.set_ylim(0, 100)
-ax.set_title("Average Performance by Parental Education")
-
-plt.xticks(rotation=35, ha="right")
-
-for i, value in enumerate(parental_performance.values):
-    ax.text(
-        i,
-        value + 1,
-        f"{value:.1f}",
-        ha="center"
-    )
-
-plt.tight_layout()
-
-st.pyplot(fig)# ==========================================
-# PERFORMANCE BY TEST PREPARATION
-# ==========================================
-
-st.subheader("📚 Performance by Test Preparation")
-
-test_prep_performance = (
-    filtered_df.groupby("test preparation course")["Average Score"]
-    .mean()
-    .sort_values(ascending=False)
-)
-
-fig, ax = plt.subplots(figsize=(8, 4))
-
-ax.bar(
-    test_prep_performance.index,
-    test_prep_performance.values
-)
-
-ax.set_ylabel("Average Score")
-ax.set_ylim(0, 100)
-ax.set_title("Average Performance by Test Preparation")
-
-for i, value in enumerate(test_prep_performance.values):
-    ax.text(
-        i,
-        value + 1,
-        f"{value:.1f}",
-        ha="center"
-    )
-
-st.pyplot(fig)
-# ==========================================
-# SCORE DISTRIBUTION
-# ==========================================
-
-st.subheader("📈 Distribution of Average Scores")
-
-fig, ax = plt.subplots(figsize=(9, 4))
-
-ax.hist(
-    filtered_df["Average Score"],
-    bins=10,
-    edgecolor="black"
-)
-
-ax.set_xlabel("Average Score")
-ax.set_ylabel("Number of Students")
-ax.set_title("Distribution of Average Student Scores")
-
-st.pyplot(fig)# ==========================================
-# PERFORMANCE BY LUNCH TYPE
-# ==========================================
-
-st.subheader("🍱 Performance by Lunch Type")
-
-lunch_performance = (
-    filtered_df.groupby("lunch")["Average Score"]
-    .mean()
-    .sort_values(ascending=False)
-)
-
-fig, ax = plt.subplots(figsize=(8, 4))
-
-ax.bar(
-    lunch_performance.index,
-    lunch_performance.values
-)
-
-ax.set_ylabel("Average Score")
-ax.set_ylim(0, 100)
-ax.set_title("Average Performance by Lunch Type")
-
-for i, value in enumerate(lunch_performance.values):
-    ax.text(
-        i,
-        value + 1,
-        f"{value:.1f}",
-        ha="center"
-    )
-
-st.pyplot(fig)# ==========================================
-# PERFORMANCE BY RACE/ETHNICITY
-# ==========================================
-
-st.subheader("🌍 Performance by Race/Ethnicity")
-
-race_performance = (
-    filtered_df.groupby("race/ethnicity")["Average Score"]
-    .mean()
-    .sort_values(ascending=False)
-)
-
-fig, ax = plt.subplots(figsize=(8, 4))
-
-ax.bar(
-    race_performance.index,
-    race_performance.values
-)
-
-ax.set_ylabel("Average Score")
-ax.set_ylim(0, 100)
-ax.set_title("Average Performance by Race/Ethnicity")
-
-for i, value in enumerate(race_performance.values):
-    ax.text(
-        i,
-        value + 1,
-        f"{value:.1f}",
-        ha="center"
-    )
-
-st.pyplot(fig)# ==========================================
-# CORRELATION HEATMAP
-# ==========================================
-
-st.subheader("🔗 Correlation Between Subject Scores")
-
-correlation_data = filtered_df[
-    ["math score", "reading score", "writing score"]
-]
-
-correlation_matrix = correlation_data.corr()
-
-fig, ax = plt.subplots(figsize=(7, 5))
-
-im = ax.imshow(correlation_matrix)
-
-ax.set_xticks(range(len(correlation_matrix.columns)))
-ax.set_yticks(range(len(correlation_matrix.columns)))
-
-ax.set_xticklabels(correlation_matrix.columns)
-ax.set_yticklabels(correlation_matrix.columns)
-
-plt.setp(
-    ax.get_xticklabels(),
-    rotation=45,
-    ha="right"
-)
-
-for i in range(len(correlation_matrix)):
-    for j in range(len(correlation_matrix.columns)):
-        ax.text(
-            j,
-            i,
-            f"{correlation_matrix.iloc[i, j]:.2f}",
-            ha="center",
-            va="center"
-        )
-
-ax.set_title("Correlation Between Academic Subjects")
-
-fig.colorbar(im)
-
-plt.tight_layout()
-
-st.pyplot(fig)
+import plotly.express as px
+from pathlib import Path
+
+st.set_page_config(page_title="Academic Intelligence",page_icon="◆",layout="wide")
+NAVY="#0C1627"; GOLD="#D9BC7B"; TEAL="#67C6B6"; BLUE="#91B2EC"; IVORY="#F5F1E8"
+st.markdown(f"""<style>
+.stApp{{background:linear-gradient(120deg,#0C1627,#13233A);color:{IVORY}}}
+[data-testid="stSidebar"]{{background:#0D192B}}
+h1,h2,h3{{color:{IVORY}!important}}
+.hero{{background:#192B44;border:1px solid #45516A;padding:25px;border-radius:18px;margin-bottom:22px}}
+.brand{{font-size:13px;letter-spacing:3px;color:{GOLD};font-weight:700}}
+.logo{{display:inline-block;padding:12px;border:1px solid {GOLD};border-radius:12px;color:{GOLD};font-weight:800;font-size:25px;margin-right:15px}}
+.kpi{{background:linear-gradient(135deg,#1D3049,#14233A);border:1px solid #3C4D63;border-radius:15px;padding:19px;margin-bottom:12px;min-height:130px}}
+.kpi-label{{font-size:12px;letter-spacing:1.4px;color:#A9B8C9;text-transform:uppercase}}
+.kpi-number{{font-size:32px;font-weight:800;color:{IVORY};margin:13px 0 5px}}
+.kpi-note{{font-size:12px;color:{GOLD}}}
+</style>""",unsafe_allow_html=True)
+@st.cache_data
+def load_data(upload=None):
+    if upload is not None: d=pd.read_csv(upload)
+    else:
+        path=next((p for p in ["StudentsPerformance.csv","Student_Performance.csv"] if Path(p).exists()),None)
+        if path is None: raise FileNotFoundError("Place StudentsPerformance.csv beside this Python file or upload it.")
+        d=pd.read_csv(path)
+    cols=["gender","race/ethnicity","parental level of education","lunch","test preparation course","math score","reading score","writing score"]
+    missing=[c for c in cols if c not in d.columns]
+    if missing: raise ValueError("Missing columns: "+", ".join(missing))
+    for c in cols[-3:]: d[c]=pd.to_numeric(d[c],errors="coerce")
+    d=d.dropna(subset=cols[-3:]).copy()
+    d["Average Score"]=d[cols[-3:]].mean(axis=1)
+    return d
+def metric(label,value,note):
+    st.markdown(f'<div class="kpi"><div class="kpi-label">{label}</div><div class="kpi-number">{value}</div><div class="kpi-note">{note}</div></div>',unsafe_allow_html=True)
+def plot(fig,height=350):
+    fig.update_layout(template="plotly_dark",height=height,paper_bgcolor="rgba(0,0,0,0)",plot_bgcolor="rgba(0,0,0,0)",font_color=IVORY,margin=dict(l=12,r=12,t=50,b=12),showlegend=False)
+    fig.update_yaxes(gridcolor="rgba(170,190,210,.15)")
+    st.plotly_chart(fig,use_container_width=True)
+st.sidebar.markdown("### ◆ Academic Intelligence")
+st.sidebar.caption("Interactive analysis controls")
+upload=st.sidebar.file_uploader("Upload student CSV (optional)",type="csv")
+try: df=load_data(upload)
+except Exception as e:
+    st.error(str(e));st.stop()
+filters=[("gender","Gender"),("race/ethnicity","Race / ethnicity"),("parental level of education","Parental education"),("lunch","Lunch type"),("test preparation course","Test preparation")]
+data=df.copy()
+for col,label in filters:
+    choices=sorted(df[col].dropna().astype(str).unique().tolist())
+    selected=st.sidebar.multiselect(label,choices,default=choices)
+    data=data[data[col].astype(str).isin(selected)]
+st.markdown('<div class="hero"><div class="brand"><span class="logo">AI</span>ACADEMIC INTELLIGENCE / EDUCATION ANALYTICS</div><h1>Student Performance Overview</h1><p>Executive insights into academic outcomes and learning factors.</p></div>',unsafe_allow_html=True)
+if data.empty: st.warning("No students match your filters. Expand the selection.");st.stop()
+means=data[["math score","reading score","writing score"]].mean()
+overall=data["Average Score"].mean()
+benchmark=60
+st.markdown("### Executive scorecard")
+a,b,c=st.columns(3)
+with a:metric("Students analyzed",f"{len(data):,}","Current filtered cohort")
+with b:metric("Overall average",f"{overall:.1f} / 100","Across all three subjects")
+with c:metric("Above benchmark",f"{(data['Average Score']>=benchmark).mean()*100:.1f}%","Illustrative 60-point benchmark")
+a,b,c=st.columns(3)
+with a:metric("Mathematics",f"{means['math score']:.1f}","Average subject score")
+with b:metric("Reading",f"{means['reading score']:.1f}","Average subject score")
+with c:metric("Writing",f"{means['writing score']:.1f}","Average subject score")
+st.divider()
+st.markdown("### 01 / Academic performance")
+a,b=st.columns(2)
+with a:
+    avg=pd.DataFrame({"Subject":["Math","Reading","Writing"],"Score":means.values})
+    fig=px.bar(avg,x="Subject",y="Score",title="Average score by subject",text="Score",color="Subject",color_discrete_sequence=[GOLD,TEAL,BLUE])
+    fig.update_traces(texttemplate="%{y:.1f}",textposition="outside")
+    fig.update_yaxes(range=[0,110]);plot(fig)
+with b:
+    fig=px.histogram(data,x="Average Score",nbins=20,title="Student score distribution",color_discrete_sequence=[TEAL])
+    fig.add_vline(x=benchmark,line_dash="dash",line_color=GOLD)
+    plot(fig)
+st.markdown("### 02 / Performance by student group")
+for (c1,t1),(c2,t2) in [(filters[0],filters[4]),(filters[2],filters[3]),(filters[1],filters[0])]:
+    a,b=st.columns(2)
+    for panel,col,title,color in [(a,c1,t1 if False else dict(filters)[c1],GOLD),(b,c2,dict(filters)[c2],BLUE)]:
+        with panel:
+            grouped=data.groupby(col,as_index=False)["Average Score"].mean().sort_values("Average Score")
+            fig=px.bar(grouped,x="Average Score",y=col,orientation="h",title=f"Average score by {title.lower()}",text="Average Score",color_discrete_sequence=[color])
+            fig.update_traces(texttemplate="%{x:.1f}",textposition="outside")
+            fig.update_xaxes(range=[0,110])
+            plot(fig,390)
+st.markdown("### 03 / Subject relationships")
+corr=data[["math score","reading score","writing score"]].corr()
+fig=px.imshow(corr,text_auto=".2f",zmin=-1,zmax=1,color_continuous_scale=[[0,"#405477"],[.5,"#263B53"],[1,TEAL]],title="Correlation between subject scores")
+plot(fig,420)
+st.markdown("### 04 / Insights")
+best=means.idxmax().replace(" score","").title()
+weak=means.idxmin().replace(" score","").title()
+st.info(f"Highest-scoring subject: {best} ({means.max():.1f}/100).")
+st.info(f"Learning support opportunity: {weak} has the lowest average ({means.min():.1f}/100).")
+prep=data.groupby("test preparation course")["Average Score"].mean()
+if len(prep)>1:
+    st.info(f"Test preparation groups differ by {prep.max()-prep.min():.1f} points in average score. This is an association, not evidence of causation.")
+st.caption("The 60-point benchmark is illustrative. This dataset does not contain attendance or study-hours measurements.")
+with st.expander("Student data explorer and export"):
+    st.dataframe(data,use_container_width=True,hide_index=True)
+    st.download_button("Download filtered CSV",data.to_csv(index=False).encode("utf-8"),"filtered_students.csv","text/csv")
